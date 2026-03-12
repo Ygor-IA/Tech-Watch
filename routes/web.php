@@ -10,3 +10,5 @@ Route::get('/', function () {
 
 // Essa única linha cria magicamente todas as 7 rotas do CRUD
 Route::resource('componentes', ComponenteHardwareController::class);
+// Rota para receber os dados do formulário de alerta
+Route::post('/componentes/{id}/alerta', [ComponenteHardwareController::class, 'assinarAlerta'])->name('componentes.alerta');

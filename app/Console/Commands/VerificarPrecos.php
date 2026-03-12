@@ -7,6 +7,8 @@ use App\Models\ComponenteHardware;
 use App\Models\HistoricoPreco;
 use Illuminate\Support\Facades\Http;
 use Symfony\Component\DomCrawler\Crawler;
+use App\Notifications\AlertaPrecoBaixo;
+use Illuminate\Support\Facades\Notification;
 
 class VerificarPrecos extends Command
 {
@@ -25,12 +27,16 @@ class VerificarPrecos extends Command
             $this->info("Verificando: {$componente->nome}");
 
             try {
-                // 1. Acessa o link da loja
-                $resposta = Http::get($componente->link);
+                // 1. Acessa o link ignorando verificação de certificado local
+                $resposta = Http::withoutVerifying()->withHeaders([
+                    'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+                    'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9',
+                    'Accept-Language' => 'pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7',
+                ])->get($componente->link);
 
-                // Se a página não carregar, pula para o próximo
+                // Se falhar, imprime o CÓDIGO DO ERRO exato
                 if (!$resposta->successful()) {
-                    $this->error("Falha ao acessar o link: {$componente->link}");
+                    $this->error("Erro " . $resposta->status() . " ao acessar: {$componente->link}");
                     continue;
                 }
 
@@ -38,10 +44,8 @@ class VerificarPrecos extends Command
                 $html = $resposta->body();
                 $crawler = new Crawler($html);
 
-                // 3. CAPTURA DO PREÇO (Atenção aqui!)
-                // Substitua '.preco-produto' pela classe real do HTML da loja (ex: Kabum, Pichau)
-                // Você descobre isso clicando com o botão direito no preço na loja e indo em "Inspecionar"
-                $textoPreco = $crawler->filter('.preco-produto')->first()->text();
+                // 3. CAPTURA DO PREÇO usando seletor curinga
+                $textoPreco = $crawler->filter('[class*="price_vista"]')->first()->text();
 
                 // 4. Limpeza do dado (Transforma "R$ 1.500,00" em 1500.00)
                 $precoLimpo = preg_replace('/[^0-9,]/', '', $textoPreco); // Tira R$ e pontos
@@ -55,12 +59,21 @@ class VerificarPrecos extends Command
                         'preco' => $precoFloat,
                     ]);
 
-                    // Atualiza o preço atual na tabela principal
                     $componente->update(['preco_atual' => $precoFloat]);
-
                     $this->info("Novo preço salvo: R$ {$precoFloat}");
-                    
-                    // TODO futuro: Aqui você chamaria a lógica de disparar e-mails para quem assinou o alerta!
+
+                    // === NOVA LÓGICA DE ALERTAS ===
+                    // Busca todos os usuários que pediram alerta para este componente 
+                    // e que o preço alvo seja MAIOR ou IGUAL ao preço atual da loja
+                    $inscricoes = $componente->inscricoesAlerta()->where('preco_alvo', '>=', $precoFloat)->get();
+
+                    foreach ($inscricoes as $inscricao) {
+                        // Dispara o e-mail para cada usuário interessado
+                        Notification::route('mail', $inscricao->email_usuario)
+                            ->notify(new AlertaPrecoBaixo($componente, $precoFloat));
+                            
+                        $this->info("E-mail de alerta enviado para: {$inscricao->email_usuario}");
+                    }
                 }
 
             } catch (\Exception $e) {

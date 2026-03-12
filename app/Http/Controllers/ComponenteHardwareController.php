@@ -76,4 +76,20 @@ class ComponenteHardwareController extends Controller
 
         return redirect()->route('componentes.index')->with('sucesso', 'Componente removido!');
     }
+    // [CREATE] Salva a inscrição de alerta de um usuário
+    public function assinarAlerta(Request $request, $id)
+    {
+        $request->validate([
+            'email_usuario' => 'required|email',
+            'preco_alvo' => 'required|numeric|min:0'
+        ]);
+
+        \App\Models\InscricaoAlerta::create([
+            'componente_hardware_id' => $id,
+            'email_usuario' => $request->email_usuario,
+            'preco_alvo' => $request->preco_alvo
+        ]);
+
+        return back()->with('sucesso', 'Alerta configurado! Você receberá um e-mail quando o preço cair para R$ ' . number_format($request->preco_alvo, 2, ',', '.'));
+    }
 }
