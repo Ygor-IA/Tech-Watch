@@ -12,3 +12,6 @@ Route::get('/', function () {
 Route::resource('componentes', ComponenteHardwareController::class);
 // Rota para receber os dados do formulário de alerta
 Route::post('/componentes/{id}/alerta', [ComponenteHardwareController::class, 'assinarAlerta'])->name('componentes.alerta');
+Route::get('/loja-teste', function () {
+    return view('loja-teste');
+});
