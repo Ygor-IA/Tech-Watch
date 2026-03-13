@@ -27,32 +27,62 @@ class VerificarPrecos extends Command
             $this->info("Verificando: {$componente->nome}");
 
             try {
-                // 1. Acessa o link ignorando verificação de certificado local
+                $url = $componente->link;
+                $seletor = '';
+                $tipoMoeda = 'BRL'; // Padrão é Real
+
+                // =======================================================
+                // 1. O CÉREBRO DO ROBÔ (Dicionário de Lojas)
+                // Ele olha o link e decide qual classe CSS usar
+                // =======================================================
+                if (str_contains($url, 'mercadolivre.com.br')) {
+                    $seletor = '.andes-money-amount__fraction';
+                } elseif (str_contains($url, 'webscraper.io')) {
+                    $seletor = '.caption > .price';
+                    $tipoMoeda = 'USD'; // Essa loja é em dólar
+                } elseif (str_contains($url, 'boadica.com.br')) {
+                    $seletor = '.preco'; // Classe genérica de exemplo para o BoaDica
+                } else {
+                    // Curinga: Se for uma loja desconhecida, tenta adivinhar
+                    $seletor = '[class*="price"]';
+                }
+
+                // =======================================================
+                // 2. O ACESSO (Com o "Super Disfarce")
+                // =======================================================
                 $resposta = Http::withoutVerifying()->withHeaders([
                     'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
                     'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9',
                     'Accept-Language' => 'pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7',
-                ])->get($componente->link);
+                ])->get($url);
 
-                // Se falhar, imprime o CÓDIGO DO ERRO exato
                 if (!$resposta->successful()) {
-                    $this->error("Erro " . $resposta->status() . " ao acessar: {$componente->link}");
-                    continue;
+                    $this->error("Erro " . $resposta->status() . " na loja: {$url}");
+                    continue; // Pula para o próximo hardware
                 }
 
-                // 2. Carrega o HTML da página no Crawler
                 $html = $resposta->body();
-                $crawler = new Crawler($html);
+                $crawler = new \Symfony\Component\DomCrawler\Crawler($html);
 
-                // 3. CAPTURA DO PREÇO usando seletor curinga
-                $textoPreco = $crawler->filter('[class*="price_vista"]')->first()->text();
+                // =======================================================
+                // 3. A CAPTURA E LIMPEZA INTELIGENTE
+                // =======================================================
+                $textoPreco = $crawler->filter($seletor)->first()->text();
 
-                // 4. Limpeza do dado (Transforma "R$ 1.500,00" em 1500.00)
-                $precoLimpo = preg_replace('/[^0-9,]/', '', $textoPreco); // Tira R$ e pontos
-                $precoLimpo = str_replace(',', '.', $precoLimpo); // Troca vírgula por ponto para o banco
+                if ($tipoMoeda == 'USD') {
+                    // Limpeza para sites em Dólar (ex: $ 120.99)
+                    $precoLimpo = preg_replace('/[^0-9.]/', '', $textoPreco); 
+                } else {
+                    // Limpeza para sites em Real (ex: R$ 1.500,00)
+                    $precoLimpo = preg_replace('/[^0-9,]/', '', $textoPreco); 
+                    $precoLimpo = str_replace(',', '.', $precoLimpo); 
+                }
+                
                 $precoFloat = (float) $precoLimpo;
 
-                // 5. Salva no banco de dados se conseguiu um preço válido
+                // =======================================================
+                // 4. SALVANDO E DISPARANDO ALERTAS
+                // =======================================================
                 if ($precoFloat > 0) {
                     HistoricoPreco::create([
                         'componente_hardware_id' => $componente->id,
@@ -62,23 +92,17 @@ class VerificarPrecos extends Command
                     $componente->update(['preco_atual' => $precoFloat]);
                     $this->info("Novo preço salvo: R$ {$precoFloat}");
 
-                    // === NOVA LÓGICA DE ALERTAS ===
-                    // Busca todos os usuários que pediram alerta para este componente 
-                    // e que o preço alvo seja MAIOR ou IGUAL ao preço atual da loja
+                    // Lógica de envio de e-mail...
                     $inscricoes = $componente->inscricoesAlerta()->where('preco_alvo', '>=', $precoFloat)->get();
-
                     foreach ($inscricoes as $inscricao) {
-                        // Dispara o e-mail para cada usuário interessado
-                        Notification::route('mail', $inscricao->email_usuario)
-                            ->notify(new AlertaPrecoBaixo($componente, $precoFloat));
-                            
-                        $this->info("E-mail de alerta enviado para: {$inscricao->email_usuario}");
+                        \Illuminate\Support\Facades\Notification::route('mail', $inscricao->email_usuario)
+                            ->notify(new \App\Notifications\AlertaPrecoBaixo($componente, $precoFloat));
+                        $this->info("E-mail enviado para: {$inscricao->email_usuario}");
                     }
                 }
 
             } catch (\Exception $e) {
-                // Se a classe CSS não for encontrada na loja, o sistema avisa mas não trava
-                $this->error("Não foi possível encontrar o preço para {$componente->nome}. Verifique a classe CSS.");
+                $this->error("Não foi possível encontrar o preço em {$componente->nome}. O layout da loja pode ter mudado.");
             }
         }
 

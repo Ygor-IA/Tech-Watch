@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('componentes_hardware', function (Blueprint $table) {
             $table->id();
             $table->string('nome');
-            $table->string('link'); // URL da loja
+            $table->text('link'); // URL da loja
             $table->decimal('preco_atual', 10, 2)->nullable();
             $table->timestamps();
         });
