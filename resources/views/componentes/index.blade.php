@@ -33,7 +33,7 @@
                 <tr>
                     <td>{{ $componente->id }}</td>
                     <td><strong>{{ $componente->nome }}</strong></td>
-                    <td>R$ {{ number_format($componente->preco_atual, 2, ',', '.') }}</td>
+                    <td>{{ $componente->preco_formatado }}</td>
                     <td><a href="{{ $componente->link }}" target="_blank" class="text-decoration-none">Acessar Loja</a></td>
                     <td class="text-center">
                         <a href="{{ route('componentes.show', $componente->id) }}" class="btn btn-sm btn-info text-white">Ver Gráfico</a>

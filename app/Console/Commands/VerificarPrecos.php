@@ -67,7 +67,14 @@ class VerificarPrecos extends Command
                 // =======================================================
                 // 3. A CAPTURA E LIMPEZA INTELIGENTE
                 // =======================================================
-                $textoPreco = $crawler->filter($seletor)->first()->text();
+                
+                if (str_contains($url, 'boadica.com.br')) {
+                    // Tática Sniper (XPath): Procura o primeiro span que contenha "R$"
+                    $textoPreco = $crawler->filterXPath('//span[contains(., "R$")]')->first()->text();
+                } else {
+                    // Lojas normais (Mercado Livre, Webscraper) usam o seletor CSS
+                    $textoPreco = $crawler->filter($seletor)->first()->text();
+                }
 
                 if ($tipoMoeda == 'USD') {
                     // Limpeza para sites em Dólar (ex: $ 120.99)
@@ -81,7 +88,7 @@ class VerificarPrecos extends Command
                 $precoFloat = (float) $precoLimpo;
 
                 // =======================================================
-                // 4. SALVANDO E DISPARANDO ALERTAS
+                // 4. SALVANDO E DISPARANDO ALE RTAS
                 // =======================================================
                 if ($precoFloat > 0) {
                     HistoricoPreco::create([

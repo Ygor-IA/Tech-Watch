@@ -22,4 +22,22 @@ class ComponenteHardware extends Model
     {
         return $this->hasMany(InscricaoAlerta::class, 'componente_hardware_id');
     }
+    // 1. Diz ao Laravel para enviar esses novos campos quando formos usar o Chart.js
+    protected $appends = ['simbolo_moeda', 'preco_formatado'];
+
+    // 2. Acessor: Descobre a moeda baseada no link
+    public function getSimboloMoedaAttribute()
+    {
+        return str_contains($this->link, 'webscraper.io') ? 'US$' : 'R$';
+    }
+
+    // 3. Acessor: Formata o preço perfeitamente de acordo com a moeda
+    public function getPrecoFormatadoAttribute()
+    {
+        if ($this->simbolo_moeda === 'US$') {
+            return 'US$ ' . number_format($this->preco_atual, 2, '.', ',');
+        }
+        
+        return 'R$ ' . number_format($this->preco_atual, 2, ',', '.');
+    }
 }

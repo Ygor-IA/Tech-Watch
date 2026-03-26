@@ -19,7 +19,7 @@
         </div>
         <div class="text-md-end text-center bg-light p-3 rounded">
             <span class="text-muted d-block text-uppercase small fw-bold">Preço Atual</span>
-            <h2 class="text-success mb-0 fw-bold">R$ {{ number_format($componente->preco_atual, 2, ',', '.') }}</h2>
+            <h2 class="text-success mb-0 fw-bold">{{ $componente->preco_formatado }}</h2>
         </div>
     </div>
 </div>
@@ -34,18 +34,18 @@
             <div class="col-lg-7">
                 <form action="{{ route('componentes.alerta', $componente->id) }}" method="POST" class="d-flex flex-column flex-md-row gap-2">
                     @csrf
-                    
+
                     <input type="email" name="email_usuario" class="form-control text-white" 
                            style="background-color: #2b2e35; border: 1px solid #3d414a;" 
                            placeholder="Seu melhor e-mail" required>
-                    
+
                     <div class="input-group" style="min-width: 180px;">
-                        <span class="input-group-text text-white" style="background-color: #3d414a; border: 1px solid #3d414a;">R$</span>
+                    <span class="input-group-text text-white" style="background-color: #3d414a; border: 1px solid #3d414a;">{{ $componente->simbolo_moeda }}</span>
                         <input type="number" step="0.01" name="preco_alvo" class="form-control text-white" 
                                style="background-color: #2b2e35; border: 1px solid #3d414a;" 
                                placeholder="Preço desejado" required>
                     </div>
-                    
+
                     <button type="submit" class="btn text-white fw-bold px-4" 
                             style="background-color: #ff6500; border: none; white-space: nowrap; transition: 0.2s;">
                         Criar Alerta
@@ -54,7 +54,7 @@
             </div>
         </div>
     </div>
-</div>
+</div> 
 
 <div class="card shadow-sm border-0">
     <div class="card-header bg-white border-bottom-0 pt-4 pb-0">
@@ -74,6 +74,9 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     const historico = @json($componente->historicosPreco);
+    
+    // Puxamos a moeda inteligente que criamos no Model direto para o JavaScript
+    const simboloMoeda = @json($componente->simbolo_moeda); 
 
     if (historico.length > 0) {
         const labels = historico.map(item => {
@@ -89,9 +92,10 @@
             data: {
                 labels: labels,
                 datasets: [{
-                    label: 'Variação de Preço (R$)',
+                    // Muda o título da linha dinamicamente
+                    label: 'Variação de Preço (' + simboloMoeda + ')', 
                     data: dataPrices,
-                    borderColor: '#ff6500', // Linha do gráfico acompanhando a cor do botão
+                    borderColor: '#ff6500',
                     backgroundColor: 'rgba(255, 101, 0, 0.1)',
                     borderWidth: 2,
                     pointBackgroundColor: '#ff6500',
@@ -101,7 +105,37 @@
                     tension: 0.3
                 }]
             },
-            options: { responsive: true }
+            options: { 
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        ticks: {
+                            // Formata os números da barra lateral do gráfico
+                            callback: function(value) {
+                                if (simboloMoeda === 'US$') {
+                                    return simboloMoeda + ' ' + value.toLocaleString('en-US', { minimumFractionDigits: 2 });
+                                }
+                                return simboloMoeda + ' ' + value.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            // Formata a caixinha preta ao passar o mouse por cima
+                            label: function(context) {
+                                let valor = context.parsed.y;
+                                if (simboloMoeda === 'US$') {
+                                    return ' Preço: ' + simboloMoeda + ' ' + valor.toLocaleString('en-US', { minimumFractionDigits: 2 });
+                                }
+                                return ' Preço: ' + simboloMoeda + ' ' + valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+                            }
+                        }
+                    }
+                }
+            }
         });
     }
 </script>
