@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
+
 class ComponenteHardware extends Model
 {
     // Forçando o nome da tabela em português para o Laravel não se perder

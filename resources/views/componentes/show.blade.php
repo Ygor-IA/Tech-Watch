@@ -1,52 +1,50 @@
 @extends('layouts.app')
 
 @section('conteudo')
-<div class="mb-4">
-    <a href="{{ route('componentes.index') }}" class="btn btn-outline-secondary">&larr; Voltar para a Lista</a>
+<div class="mt-4 mb-4">
+    <a href="{{ route('componentes.index') }}" class="btn btn-sm text-white shadow-sm px-3" style="background-color: #3d414a; border: none; transition: 0.2s;">
+        &larr; Voltar para a Lista
+    </a>
 </div>
 
 @if(session('sucesso'))
-    <div class="alert alert-success shadow-sm">
+    <div class="alert shadow-sm border-0 mb-4" style="background-color: #1a2e23; color: #4ade80; border-left: 4px solid #22c55e !important;">
         {{ session('sucesso') }}
     </div>
 @endif
 
-<div class="card shadow-sm mb-4 border-0 border-start border-primary border-5">
-    <div class="card-body d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
+<div class="card shadow-lg mb-4 border-0 border-start border-5" style="background-color: #1e2024; border-left-color: #ff6500 !important; border-radius: 12px;">
+    <div class="card-body d-flex flex-column flex-md-row justify-content-between align-items-center gap-3 p-4">
         <div>
-            <h2 class="mb-0 text-dark fw-bold">{{ $componente->nome }}</h2>
-            <a href="{{ $componente->link }}" target="_blank" class="text-decoration-none text-primary">Acessar página na loja</a>
+            <h2 class="mb-1 text-white fw-bold">{{ $componente->nome }}</h2>
+            <a href="{{ $componente->link }}" target="_blank" style="color: #ff6500; text-decoration: none; font-weight: 500;">Acessar página na loja ↗</a>
         </div>
-        <div class="text-md-end text-center bg-light p-3 rounded">
-            <span class="text-muted d-block text-uppercase small fw-bold">Preço Atual</span>
-            <h2 class="text-success mb-0 fw-bold">{{ $componente->preco_formatado }}</h2>
+        <div class="text-md-end text-center p-3 rounded" style="background-color: #111214;">
+            <span class="d-block text-uppercase small fw-bold" style="color: #8c92a0;">Preço Atual</span>
+            <h2 class="mb-0 fw-bold" style="color: #4ade80;">{{ $componente->preco_formatado }}</h2>
         </div>
     </div>
 </div>
 
-<div class="card border-0 mb-4" style="background-color: #1e2024; border-radius: 8px; box-shadow: 0 10px 20px rgba(0,0,0,0.15);">
+<div class="card border-0 mb-4 shadow-lg" style="background-color: #1e2024; border-radius: 12px;">
     <div class="card-body p-4">
         <div class="row align-items-center">
             <div class="col-lg-5 mb-3 mb-lg-0 text-center text-lg-start">
                 <h5 class="text-white fw-bold mb-1">🔔 Alerta de Preço</h5>
-                <p class="mb-0 small" style="color: #a0a5b1;">Quer pagar menos? Avisamos você por e-mail assim que o preço cair.</p>
+                <p class="mb-0 small" style="color: #8c92a0;">Quer pagar menos? Avisamos você por e-mail assim que o preço cair.</p>
             </div>
             <div class="col-lg-7">
-                <form action="{{ route('componentes.alerta', $componente->id) }}" method="POST" class="d-flex flex-column flex-md-row gap-2">
+            <form action="{{ route('componentes.alerta', $componente->id) }}" method="POST" class="d-flex flex-column flex-md-row gap-3">
                     @csrf
-
-                    <input type="email" name="email_usuario" class="form-control text-white" 
-                           style="background-color: #2b2e35; border: 1px solid #3d414a;" 
-                           placeholder="Seu melhor e-mail" required>
-
-                    <div class="input-group" style="min-width: 180px;">
-                    <span class="input-group-text text-white" style="background-color: #3d414a; border: 1px solid #3d414a;">{{ $componente->simbolo_moeda }}</span>
+                    
+                    <div class="input-group shadow-sm" style="max-width: 250px;">
+                        <span class="input-group-text text-white fw-bold" style="background-color: #3d414a; border: 1px solid #3d414a;">{{ $componente->simbolo_moeda }}</span>
                         <input type="number" step="0.01" name="preco_alvo" class="form-control text-white" 
                                style="background-color: #2b2e35; border: 1px solid #3d414a;" 
                                placeholder="Preço desejado" required>
                     </div>
-
-                    <button type="submit" class="btn text-white fw-bold px-4" 
+                    
+                    <button type="submit" class="btn text-white fw-bold px-4 shadow-sm" 
                             style="background-color: #ff6500; border: none; white-space: nowrap; transition: 0.2s;">
                         Criar Alerta
                     </button>
@@ -54,17 +52,17 @@
             </div>
         </div>
     </div>
-</div> 
+</div>
 
-<div class="card shadow-sm border-0">
-    <div class="card-header bg-white border-bottom-0 pt-4 pb-0">
-        <h5 class="mb-0 text-secondary">Histórico de Variação</h5>
+<div class="card shadow-lg border-0" style="background-color: #1e2024; border-radius: 12px;">
+    <div class="card-header border-bottom-0 pt-4 pb-0" style="background-color: transparent;">
+        <h5 class="mb-0 fw-bold" style="color: #c0c6d4;">Histórico de Variação</h5>
     </div>
-    <div class="card-body">
+    <div class="card-body p-4">
         <canvas id="graficoPrecos" height="100"></canvas>
         
         @if($componente->historicosPreco->isEmpty())
-            <div class="alert alert-light border mt-3 text-center" role="alert">
+            <div class="alert mt-4 text-center border-0" style="background-color: #2b2e35; color: #8c92a0;" role="alert">
                 Aguardando a primeira verificação do robô para desenhar o gráfico.
             </div>
         @endif
@@ -73,9 +71,11 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
+    // Configura as cores padrão do Chart.js para o Dark Mode
+    Chart.defaults.color = '#8c92a0'; // Cor das letras do gráfico
+    Chart.defaults.borderColor = '#2b2e35'; // Cor das linhas de grade do fundo
+
     const historico = @json($componente->historicosPreco);
-    
-    // Puxamos a moeda inteligente que criamos no Model direto para o JavaScript
     const simboloMoeda = @json($componente->simbolo_moeda); 
 
     if (historico.length > 0) {
@@ -92,7 +92,6 @@
             data: {
                 labels: labels,
                 datasets: [{
-                    // Muda o título da linha dinamicamente
                     label: 'Variação de Preço (' + simboloMoeda + ')', 
                     data: dataPrices,
                     borderColor: '#ff6500',
@@ -108,10 +107,13 @@
             options: { 
                 responsive: true,
                 scales: {
+                    x: {
+                        grid: { color: '#2b2e35' }
+                    },
                     y: {
+                        grid: { color: '#2b2e35' },
                         beginAtZero: false,
                         ticks: {
-                            // Formata os números da barra lateral do gráfico
                             callback: function(value) {
                                 if (simboloMoeda === 'US$') {
                                     return simboloMoeda + ' ' + value.toLocaleString('en-US', { minimumFractionDigits: 2 });
@@ -123,8 +125,12 @@
                 },
                 plugins: {
                     tooltip: {
+                        backgroundColor: '#111214',
+                        titleColor: '#c0c6d4',
+                        bodyColor: '#ffffff',
+                        borderColor: '#ff6500',
+                        borderWidth: 1,
                         callbacks: {
-                            // Formata a caixinha preta ao passar o mouse por cima
                             label: function(context) {
                                 let valor = context.parsed.y;
                                 if (simboloMoeda === 'US$') {

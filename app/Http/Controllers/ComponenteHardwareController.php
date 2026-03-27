@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\ComponenteHardware;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class ComponenteHardwareController extends Controller
 {
@@ -79,17 +80,20 @@ class ComponenteHardwareController extends Controller
     // [CREATE] Salva a inscrição de alerta de um usuário
     public function assinarAlerta(Request $request, $id)
     {
+        // Validamos apenas o preço alvo, pois o e-mail não vem mais da tela
         $request->validate([
-            'email_usuario' => 'required|email',
             'preco_alvo' => 'required|numeric|min:0'
         ]);
 
-        \App\Models\InscricaoAlerta::create([
-            'componente_hardware_id' => $id,
-            'email_usuario' => $request->email_usuario,
+        $componente = ComponenteHardware::findOrFail($id);
+
+        // A Mágica: Puxamos o e-mail do usuário logado automaticamente!
+        $componente->inscricoesAlerta()->create([
+            'email_usuario' => Auth::user()->email, 
             'preco_alvo' => $request->preco_alvo
         ]);
 
-        return back()->with('sucesso', 'Alerta configurado! Você receberá um e-mail quando o preço cair para R$ ' . number_format($request->preco_alvo, 2, ',', '.'));
+        // Retorna a mensagem com o nome do usuário
+        return back()->with('sucesso', 'Alerta criado, ' . Auth::user()->name . '! Avisaremos no seu e-mail assim que o preço cair.');
     }
 }
