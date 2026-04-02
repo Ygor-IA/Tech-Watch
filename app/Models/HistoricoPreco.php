@@ -10,6 +10,14 @@ class HistoricoPreco extends Model
     
     protected $fillable = ['componente_hardware_id', 'preco', 'registrado_em'];
 
+    protected function casts(): array
+    {
+        return [
+            'registrado_em' => 'datetime',
+            'preco' => 'decimal:2',
+        ];
+    }
+
     // Relacionamento: Este histórico pertence a um componente específico
     public function componente()
     {

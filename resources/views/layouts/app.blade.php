@@ -3,49 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Monitor de Hardware</title>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="description" content="Tech-Watch — Monitore preços de hardware em tempo real. Receba alertas quando o preço cair.">
+    <meta name="keywords" content="hardware, monitoramento de preços, tech, placa de vídeo, processador, alertas">
+    <meta name="author" content="Tech-Watch">
+    
+    <title>@yield('titulo', 'Tech-Watch — Monitoramento de Hardware')</title>
+
+    {{-- Google Fonts --}}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    {{-- Bootstrap 5 --}}
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    {{-- Vite Assets --}}
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body style="background-color: #0f1012;">
+<body>
 
-<nav class="navbar navbar-expand-lg shadow-sm" style="background-color: #111214; border-bottom: 2px solid #ff6500;">
+{{-- ===== NAVBAR ===== --}}
+<nav class="tw-navbar">
     <div class="container">
-        <a class="navbar-brand text-white fw-bold" href="{{ route('componentes.index') }}">
-            TECH<span style="color: #ff6500;">-WATCH</span>
-        </a>
+        <div class="d-flex justify-content-between align-items-center">
+            <a class="navbar-brand" href="{{ route('componentes.index') }}">
+                <span style="color: #fff;">TECH</span><span class="brand-accent">-WATCH</span>
+            </a>
 
-        <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarTech">
-            <span class="navbar-toggler-icon" style="filter: invert(1);"></span>
-        </button>
-
-        <div class="collapse navbar-collapse" id="navbarTech">
-            <ul class="navbar-nav me-auto">
-                </ul>
-            
-            <div class="d-flex align-items-center mt-2 mt-lg-0">
+            <div class="d-flex align-items-center gap-3">
                 @auth
-                    <span style="color: #c0c6d4; font-size: 0.95rem;" class="me-3">
-                        Olá, <strong class="text-white">{{ Auth::user()->name }}</strong>
+                    <span class="nav-user d-none d-sm-inline">
+                        Olá, <strong>{{ Auth::user()->name }}</strong>
                     </span>
                     <form action="{{ route('logout') }}" method="POST" class="m-0">
                         @csrf
-                        <button type="submit" class="btn btn-sm text-white fw-bold px-3" style="background-color: #ff6500; border: none; transition: 0.2s;">Sair</button>
+                        <button type="submit" class="tw-btn tw-btn-sm tw-btn-secondary">
+                            ⏻ Sair
+                        </button>
                     </form>
                 @else
-                    <a href="{{ route('login') }}" class="btn btn-sm text-white fw-bold px-3" style="background-color: transparent; border: 1px solid #ff6500;">Entrar</a>
+                    <a href="{{ route('login') }}" class="tw-btn tw-btn-sm tw-btn-cyan">
+                        ⚡ Entrar
+                    </a>
                 @endauth
             </div>
         </div>
     </div>
 </nav>
 
-<style>
-    body { background-color: #0f1012; color: #ffffff; }
-</style>
-    <div class="container">
-        @yield('conteudo')
-    </div>
+{{-- ===== MAIN CONTENT ===== --}}
+<main class="container" style="padding-top: 2rem; padding-bottom: 2rem; position: relative; z-index: 1;">
+    @yield('conteudo')
+</main>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+{{-- ===== FOOTER ===== --}}
+<footer class="tw-footer">
+    <div class="container">
+        <div class="tw-footer-content">
+            <div class="tw-footer-brand">
+                TECH<span class="brand-accent">-WATCH</span>
+            </div>
+            <div class="tw-footer-text">
+                © {{ date('Y') }} Tech-Watch — Monitoramento inteligente de preços de hardware.
+            </div>
+        </div>
+    </div>
+</footer>
+
+{{-- Bootstrap JS --}}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

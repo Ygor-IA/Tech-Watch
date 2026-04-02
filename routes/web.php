@@ -26,7 +26,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('componentes', ComponenteHardwareController::class);
     
     // A rota de criar o alerta de preço (se for manter para a apresentação)
-    Route::post('/componentes/{id}/alerta', [ComponenteHardwareController::class, 'assinarAlerta'])->name('componentes.alerta');
+    Route::post('/componentes/{componente}/alerta', [ComponenteHardwareController::class, 'assinarAlerta'])->name('componentes.alerta');
 });
 // ==========================================
 // ROTAS ABERTAS E TESTES

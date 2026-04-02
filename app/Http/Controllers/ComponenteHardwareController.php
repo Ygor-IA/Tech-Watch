@@ -24,76 +24,69 @@ class ComponenteHardwareController extends Controller
     // [CREATE] Salva o novo hardware no banco de dados
     public function store(Request $request)
     {
-        // Validação simples para não entrar dado em branco
-        $request->validate([
+        $dados = $request->validate([
             'nome' => 'required|string|max:255',
             'link' => 'required|url',
             'preco_atual' => 'nullable|numeric'
         ]);
 
-        ComponenteHardware::create($request->all());
+        ComponenteHardware::create($dados);
 
         return redirect()->route('componentes.index')->with('sucesso', 'Componente adicionado com sucesso!');
     }
 
     // [READ] Mostra detalhes de um componente específico (onde vai ficar o gráfico)
-    public function show($id)
+    public function show(ComponenteHardware $componente)
     {
-        // Busca o componente e traz junto todo o histórico de preços ordenado por data
-        $componente = ComponenteHardware::with(['historicosPreco' => function($query) {
+        // Carrega o histórico de preços ordenado por data
+        $componente->load(['historicosPreco' => function($query) {
             $query->orderBy('registrado_em', 'asc');
-        }])->findOrFail($id);
+        }]);
 
         return view('componentes.show', compact('componente'));
     }
 
     // [UPDATE] Mostra formulário de edição
-    public function edit($id)
+    public function edit(ComponenteHardware $componente)
     {
-        $componente = ComponenteHardware::findOrFail($id);
         return view('componentes.edit', compact('componente'));
     }
 
     // [UPDATE] Salva as alterações no banco
-    public function update(Request $request, $id)
+    public function update(Request $request, ComponenteHardware $componente)
     {
-        $request->validate([
+        $dados = $request->validate([
             'nome' => 'required|string|max:255',
             'link' => 'required|url',
             'preco_atual' => 'nullable|numeric'
         ]);
 
-        $componente = ComponenteHardware::findOrFail($id);
-        $componente->update($request->all());
+        $componente->update($dados);
 
         return redirect()->route('componentes.index')->with('sucesso', 'Componente atualizado com sucesso!');
     }
 
     // [DELETE] Remove o hardware do banco
-    public function destroy($id)
+    public function destroy(ComponenteHardware $componente)
     {
-        $componente = ComponenteHardware::findOrFail($id);
         $componente->delete();
 
         return redirect()->route('componentes.index')->with('sucesso', 'Componente removido!');
     }
+
     // [CREATE] Salva a inscrição de alerta de um usuário
-    public function assinarAlerta(Request $request, $id)
+    public function assinarAlerta(Request $request, ComponenteHardware $componente)
     {
-        // Validamos apenas o preço alvo, pois o e-mail não vem mais da tela
         $request->validate([
             'preco_alvo' => 'required|numeric|min:0'
         ]);
 
-        $componente = ComponenteHardware::findOrFail($id);
-
-        // A Mágica: Puxamos o e-mail do usuário logado automaticamente!
+        // Puxamos o e-mail do usuário logado automaticamente
         $componente->inscricoesAlerta()->create([
             'email_usuario' => Auth::user()->email, 
             'preco_alvo' => $request->preco_alvo
         ]);
 
-        // Retorna a mensagem com o nome do usuário
         return back()->with('sucesso', 'Alerta criado, ' . Auth::user()->name . '! Avisaremos no seu e-mail assim que o preço cair.');
     }
 }

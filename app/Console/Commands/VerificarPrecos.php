@@ -97,7 +97,8 @@ class VerificarPrecos extends Command
                     ]);
 
                     $componente->update(['preco_atual' => $precoFloat]);
-                    $this->info("Novo preço salvo: R$ {$precoFloat}");
+                    $moeda = $componente->simbolo_moeda;
+                    $this->info("Novo preço salvo: {$moeda} {$precoFloat}");
 
                     // Lógica de envio de e-mail...
                     $inscricoes = $componente->inscricoesAlerta()->where('preco_alvo', '>=', $precoFloat)->get();
