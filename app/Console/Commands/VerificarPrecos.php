@@ -27,7 +27,7 @@ class VerificarPrecos extends Command
         $this->info('╚══════════════════════════════════════════╝');
         $this->info('');
 
-        $componentes = ComponenteHardware::all();
+        $componentes = ComponenteHardware::ativos()->get();
 
         if ($componentes->isEmpty()) {
             $this->warn('Nenhum componente cadastrado para verificar.');
@@ -388,6 +388,7 @@ class VerificarPrecos extends Command
             $this->line("   ℹ Preço não mudou ({$moedaSimbolo} {$precoFloat}), pulando registro.");
             // Atualiza o preço atual mesmo assim para manter sincronizado
             $componente->update(['preco_atual' => $precoFloat]);
+            $componente->atualizarExtremos($precoFloat);
             return;
         }
 
@@ -398,6 +399,7 @@ class VerificarPrecos extends Command
         ]);
 
         $componente->update(['preco_atual' => $precoFloat]);
+        $componente->atualizarExtremos($precoFloat);
 
         $this->info("   💰 Novo preço salvo: {$moedaSimbolo} {$precoFloat}");
     }

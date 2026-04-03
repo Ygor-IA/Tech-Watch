@@ -51,6 +51,18 @@
                         </div>
 
                         <div class="tw-mb-3">
+                            <label class="tw-label">Categoria</label>
+                            <select name="categoria" class="tw-input" required>
+                                <option value="" disabled selected>Selecione uma categoria...</option>
+                                @foreach($categorias as $key => $label)
+                                    <option value="{{ $key }}" {{ old('categoria') == $key ? 'selected' : '' }}>
+                                        {{ $label }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div class="tw-mb-3">
                             <label class="tw-label">Link da Loja (URL)</label>
                             <input type="url" name="link" class="tw-input" required 
                                    value="{{ old('link') }}" 

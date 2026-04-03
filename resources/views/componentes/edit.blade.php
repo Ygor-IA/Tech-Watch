@@ -56,6 +56,18 @@
                         </div>
 
                         <div class="tw-mb-3">
+                            <label class="tw-label">Categoria</label>
+                            <select name="categoria" class="tw-input" required>
+                                <option value="" disabled>Selecione uma categoria...</option>
+                                @foreach($categorias as $key => $label)
+                                    <option value="{{ $key }}" {{ old('categoria', $componente->categoria) == $key ? 'selected' : '' }}>
+                                        {{ $label }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div class="tw-mb-3">
                             <label class="tw-label">Link da Loja (URL)</label>
                             <input type="url" name="link" class="tw-input" required 
                                    value="{{ old('link', $componente->link) }}" 
@@ -72,6 +84,14 @@
                                        placeholder="0,00" style="border-radius: 0 10px 10px 0;">
                             </div>
                             <p class="tw-form-hint">O preço é atualizado automaticamente pelo robô. Preencha apenas se quiser alterar manualmente.</p>
+                        </div>
+
+                        <div class="tw-mb-3 form-check form-switch mt-4">
+                            <input class="form-check-input" type="checkbox" role="switch" id="ativoSwitch" name="ativo" value="1" {{ old('ativo', $componente->ativo) ? 'checked' : '' }}>
+                            <label class="form-check-label tw-label" for="ativoSwitch" style="margin-left: 0.5rem; transform: translateY(-2px); display: inline-block;">
+                                Monitoramento Ativo
+                            </label>
+                            <p class="tw-form-hint">Desmarque se não quiser mais que o robô procure preços para este hardware (Ex: Você já comprou).</p>
                         </div>
 
                         <hr style="border-color: rgba(0, 229, 255, 0.08); margin: 2rem 0;">

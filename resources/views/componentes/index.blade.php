@@ -47,9 +47,13 @@
         <div class="tw-hw-grid">
             @foreach($componentes as $componente)
                 <div class="tw-hw-card">
-                    <div class="tw-hw-card-top">
-                        <span class="tw-hw-card-id">#{{ str_pad($componente->id, 3, '0', STR_PAD_LEFT) }}</span>
+                    <div class="tw-hw-card-top" style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px;">
+                        <span class="tw-hw-card-id" style="margin-right: auto;">#{{ str_pad($componente->id, 3, '0', STR_PAD_LEFT) }}</span>
+                        <span class="tw-badge tw-badge-secondary">{{ $componente->categoria_label }}</span>
                         <span class="tw-badge tw-badge-cyan">{{ $componente->simbolo_moeda }}</span>
+                        @if(!$componente->ativo)
+                            <span class="tw-badge tw-badge-orange" style="background: rgba(255, 107, 0, 0.1); color: #ff6b00; border: 1px solid rgba(255, 107, 0, 0.2);">⏸️ Pausado</span>
+                        @endif
                     </div>
 
                     <h3 class="tw-hw-card-name">{{ $componente->nome }}</h3>

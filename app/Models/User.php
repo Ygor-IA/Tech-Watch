@@ -45,4 +45,10 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    // Relacionamento: Um usuário tem vários componentes monitorados
+    public function componentes()
+    {
+        return $this->hasMany(ComponenteHardware::class);
+    }
 }
