@@ -27,19 +27,22 @@ class VerificarPrecos extends Command
         $this->info('╚══════════════════════════════════════════╝');
         $this->info('');
 
-        $componentes = ComponenteHardware::ativos()->get();
+        $query = ComponenteHardware::ativos();
+        $total = $query->count();
 
-        if ($componentes->isEmpty()) {
+        if ($total === 0) {
             $this->warn('Nenhum componente cadastrado para verificar.');
             return;
         }
 
-        $this->info("📋 {$componentes->count()} componente(s) para verificar...");
+        $this->info("📋 {$total} componente(s) para verificar...");
         $this->info('');
 
-        foreach ($componentes as $componente) {
-            $this->verificarComponente($componente);
-        }
+        $query->chunk(50, function ($componentes) {
+            foreach ($componentes as $componente) {
+                $this->verificarComponente($componente);
+            }
+        });
 
         // Tabela de resumo no final
         $this->exibirResumo();

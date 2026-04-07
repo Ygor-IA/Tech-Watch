@@ -8,11 +8,15 @@ use Illuminate\Support\Facades\Auth;
 
 class ComponenteHardwareController extends Controller
 {
-    // [READ] Lista todos os componentes restritos ao usuário logado
     public function index()
     {
-        // Pega apenas os componentes do usuário logado e adiciona a categoria_label aos models da coleção
-        $componentes = Auth::user()->componentes()->get();
+        // Se for admin, carrega todos os componentes. Se for usuário normal, apenas os seus.
+        if (Auth::user()->is_admin) {
+            $componentes = ComponenteHardware::all();
+        } else {
+            $componentes = Auth::user()->componentes()->get();
+        }
+        
         return view('componentes.index', compact('componentes'));
     }
 
@@ -42,8 +46,8 @@ class ComponenteHardwareController extends Controller
     // [READ] Mostra detalhes de um componente específico
     public function show(ComponenteHardware $componente)
     {
-        // Autorização básica: usuário logado só pode ver seus próprios componentes
-        if ($componente->user_id !== Auth::id()) {
+        // Autorização básica: usuário logado só pode ver seus próprios componentes (Admin vê tudo)
+        if ($componente->user_id !== Auth::id() && !Auth::user()->is_admin) {
             abort(403, 'Acesso Negado');
         }
 
@@ -58,7 +62,7 @@ class ComponenteHardwareController extends Controller
     // [UPDATE] Mostra formulário de edição
     public function edit(ComponenteHardware $componente)
     {
-        if ($componente->user_id !== Auth::id()) {
+        if ($componente->user_id !== Auth::id() && !Auth::user()->is_admin) {
             abort(403, 'Acesso Negado');
         }
 
@@ -69,7 +73,7 @@ class ComponenteHardwareController extends Controller
     // [UPDATE] Salva as alterações no banco
     public function update(Request $request, ComponenteHardware $componente)
     {
-        if ($componente->user_id !== Auth::id()) {
+        if ($componente->user_id !== Auth::id() && !Auth::user()->is_admin) {
             abort(403, 'Acesso Negado');
         }
 
@@ -92,7 +96,7 @@ class ComponenteHardwareController extends Controller
     // [DELETE] Remove o hardware do banco (Soft Delete)
     public function destroy(ComponenteHardware $componente)
     {
-        if ($componente->user_id !== Auth::id()) {
+        if ($componente->user_id !== Auth::id() && !Auth::user()->is_admin) {
             abort(403, 'Acesso Negado');
         }
 

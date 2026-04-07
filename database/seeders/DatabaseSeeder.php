@@ -16,15 +16,35 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // 1. Cria usuário de demonstração
+        // 1. Cria usuário de demonstração ADM
         $user = User::firstOrCreate([
             'email' => 'admin@techwatch.com'
         ], [
             'name' => 'Admin Tech-Watch',
             'password' => Hash::make('password123'),
+            'is_admin' => true,
         ]);
 
-        $this->command->info('Usuário de teste criado (admin@techwatch.com - senha: password123)');
+        $this->command->info('Usuário ADM de teste criado (admin@techwatch.com - senha: password123)');
+
+        // 1.1 Cria dois usuários comuns
+        $user1 = User::firstOrCreate([
+            'email' => 'joao@techwatch.com'
+        ], [
+            'name' => 'João',
+            'password' => Hash::make('password123'),
+            'is_admin' => false,
+        ]);
+
+        $user2 = User::firstOrCreate([
+            'email' => 'maria@techwatch.com'
+        ], [
+            'name' => 'Maria',
+            'password' => Hash::make('password123'),
+            'is_admin' => false,
+        ]);
+
+        $this->command->info('Dois usuários comuns criados (joao@ e maria@ - senha: password123)');
 
         // 2. Componentes de teste com links reais (BoaDica, ML e Teste Local)
         $componentes = [
@@ -61,7 +81,7 @@ class DatabaseSeeder extends Seeder
         foreach ($componentes as $compData) {
             $comp = ComponenteHardware::firstOrCreate(
                 ['link' => $compData['link']], // Evitar duplo cadastro se rodar o seeder 2x
-                array_merge($compData, ['user_id' => $user->id])
+                array_merge($compData, ['user_id' => $user1->id])
             );
 
             // Popula com histórico fictício para os gráficos não ficarem vazios
