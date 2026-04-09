@@ -11,8 +11,12 @@ class ComponenteHardwareController extends Controller
     // [READ] Lista todos os componentes restritos ao usuário logado
     public function index()
     {
-        // Pega apenas os componentes do usuário logado e adiciona a categoria_label aos models da coleção
-        $componentes = Auth::user()->componentes()->get();
+        // Pega apenas os componentes do usuário logado (ou todos caso seja admin)
+        if (Auth::user()->email === 'admin@techwatch.com') {
+            $componentes = ComponenteHardware::all();
+        } else {
+            $componentes = Auth::user()->componentes()->get();
+        }
         return view('componentes.index', compact('componentes'));
     }
 
@@ -36,14 +40,26 @@ class ComponenteHardwareController extends Controller
         // Vincula o componente ao usuário logado
         Auth::user()->componentes()->create($dados);
 
+        // Salva na seed para ser recarregado caso o banco seja recriado
+        $jsonPath = database_path('seeders/components_seed.json');
+        $seededComponents = [];
+        if (file_exists($jsonPath)) {
+            $seededComponents = json_decode(file_get_contents($jsonPath), true) ?? [];
+        }
+        $seededComponents[] = array_merge($dados, [
+            'ativo' => true,
+            'user_email' => Auth::user()->email
+        ]);
+        file_put_contents($jsonPath, json_encode($seededComponents, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+
         return redirect()->route('componentes.index')->with('sucesso', 'Componente adicionado com sucesso!');
     }
 
     // [READ] Mostra detalhes de um componente específico
     public function show(ComponenteHardware $componente)
     {
-        // Autorização básica: usuário logado só pode ver seus próprios componentes
-        if ($componente->user_id !== Auth::id()) {
+        // Autorização básica: usuário logado só pode ver seus próprios componentes (admin vê tudo)
+        if ($componente->user_id !== Auth::id() && Auth::user()->email !== 'admin@techwatch.com') {
             abort(403, 'Acesso Negado');
         }
 
@@ -58,7 +74,7 @@ class ComponenteHardwareController extends Controller
     // [UPDATE] Mostra formulário de edição
     public function edit(ComponenteHardware $componente)
     {
-        if ($componente->user_id !== Auth::id()) {
+        if ($componente->user_id !== Auth::id() && Auth::user()->email !== 'admin@techwatch.com') {
             abort(403, 'Acesso Negado');
         }
 
@@ -69,7 +85,7 @@ class ComponenteHardwareController extends Controller
     // [UPDATE] Salva as alterações no banco
     public function update(Request $request, ComponenteHardware $componente)
     {
-        if ($componente->user_id !== Auth::id()) {
+        if ($componente->user_id !== Auth::id() && Auth::user()->email !== 'admin@techwatch.com') {
             abort(403, 'Acesso Negado');
         }
 
@@ -92,7 +108,7 @@ class ComponenteHardwareController extends Controller
     // [DELETE] Remove o hardware do banco (Soft Delete)
     public function destroy(ComponenteHardware $componente)
     {
-        if ($componente->user_id !== Auth::id()) {
+        if ($componente->user_id !== Auth::id() && Auth::user()->email !== 'admin@techwatch.com') {
             abort(403, 'Acesso Negado');
         }
 

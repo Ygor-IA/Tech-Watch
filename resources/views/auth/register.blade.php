@@ -56,7 +56,7 @@
             </div>
 
             <button type="submit" class="tw-btn tw-btn-primary tw-btn-lg" style="width: 100%; justify-content: center;">
-                🚀 FINALIZAR CADASTRO
+                FINALIZAR CADASTRO
             </button>
 
             <div class="tw-auth-footer">

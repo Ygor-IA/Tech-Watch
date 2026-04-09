@@ -39,7 +39,7 @@
             </div>
 
             <button type="submit" class="tw-btn tw-btn-primary tw-btn-lg" style="width: 100%; justify-content: center;">
-                ⚡ ENTRAR
+                ENTRAR
             </button>
 
             <div class="tw-auth-footer">

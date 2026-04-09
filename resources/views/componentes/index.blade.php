@@ -30,7 +30,7 @@
             <div class="tw-stat-label">Monitoramento</div>
         </div>
         <div class="tw-stat-card">
-            <div class="tw-stat-value">⚡</div>
+            <div class="tw-stat-value">—</div>
             <div class="tw-stat-label">Alertas Ativos</div>
         </div>
     </div>

@@ -19,7 +19,11 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
     {{-- Vite Assets --}}
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
+        @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @else
+        <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+    @endif
 </head>
 <body>
 
@@ -44,7 +48,7 @@
                     </form>
                 @else
                     <a href="{{ route('login') }}" class="tw-btn tw-btn-sm tw-btn-cyan">
-                        ⚡ Entrar
+                        Entrar
                     </a>
                 @endauth
             </div>

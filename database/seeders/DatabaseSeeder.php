@@ -16,24 +16,39 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // 1. Cria usuário de demonstração
-        $user = User::firstOrCreate([
+        // 1. Cria usuários de demonstração
+        $adminUser = User::firstOrCreate([
             'email' => 'admin@techwatch.com'
         ], [
             'name' => 'Admin Tech-Watch',
             'password' => Hash::make('password123'),
         ]);
 
-        $this->command->info('Usuário de teste criado (admin@techwatch.com - senha: password123)');
+        $user1 = User::firstOrCreate([
+            'email' => 'joao@techwatch.com'
+        ], [
+            'name' => 'João',
+            'password' => Hash::make('password123'),
+        ]);
+
+        $user2 = User::firstOrCreate([
+            'email' => 'maria@techwatch.com'
+        ], [
+            'name' => 'Maria',
+            'password' => Hash::make('password123'),
+        ]);
+
+        $this->command->info('Usuários de teste criados (admin@techwatch.com, joao@techwatch.com, maria@techwatch.com)');
 
         // 2. Componentes de teste com links reais (BoaDica, ML e Teste Local)
-        $componentes = [
+        $componentesIniciais = [
             [
                 'nome' => 'Radeon RX 7600 (Exemplo Mercado Livre)',
                 'categoria' => 'GPU',
                 'link' => 'https://www.mercadolivre.com.br/placa-de-video-amd-radeon-rx-7600-8gb-gddr6-gigabyte-cor-preto/p/MLB24376378',
                 'preco_atual' => 1999.00,
                 'ativo' => true,
+                'user_id' => $adminUser->id
             ],
             [
                 'nome' => 'Processador Intel Core i5-12400F',
@@ -41,6 +56,7 @@ class DatabaseSeeder extends Seeder
                 'link' => 'https://www.boadica.com.br/produtos/p193635',
                 'preco_atual' => 749.90,
                 'ativo' => true,
+                'user_id' => $adminUser->id
             ],
             [
                 'nome' => 'SSD WD Green SN350 1TB',
@@ -48,20 +64,45 @@ class DatabaseSeeder extends Seeder
                 'link' => 'https://www.boadica.com.br/produtos/p192569',
                 'preco_atual' => 380.00,
                 'ativo' => true,
+                'user_id' => $adminUser->id
             ],
             [
                 'nome' => 'Monitor Lenovo ThinkVision (Teste WebScraper)',
                 'categoria' => 'Monitor',
                 'link' => 'https://webscraper.io/test-sites/e-commerce/allinone/computers/monitors',
                 'preco_atual' => 134.99,
-                'ativo' => false, // Pausado como exemplo
+                'ativo' => false,
+                'user_id' => $adminUser->id
             ]
         ];
 
-        foreach ($componentes as $compData) {
+        // 3. Lê componentes salvos dinamicamente via JSON
+        $jsonComponents = [];
+        $jsonPath = database_path('seeders/components_seed.json');
+        if (file_exists($jsonPath)) {
+            $jsonContent = file_get_contents($jsonPath);
+            $parsed = json_decode($jsonContent, true);
+            if (is_array($parsed)) {
+                foreach ($parsed as $item) {
+                    $ownerEmail = $item['user_email'] ?? 'admin@techwatch.com';
+                    $owner = User::where('email', $ownerEmail)->first() ?? $adminUser;
+                    unset($item['user_email']);
+                    
+                    $item['user_id'] = $owner->id;
+                    $jsonComponents[] = $item;
+                }
+            }
+        }
+
+        $todosComponentes = array_merge($componentesIniciais, $jsonComponents);
+
+        foreach ($todosComponentes as $compData) {
+            $userId = $compData['user_id'];
+            unset($compData['user_id']); // Remove da query principal para o firstOrCreate poder procurar apenas pelo link se quiser, mas aqui a gente usa user_id no array_merge. Na verdade a gente precisa de user_id na hora de salvar.
+
             $comp = ComponenteHardware::firstOrCreate(
                 ['link' => $compData['link']], // Evitar duplo cadastro se rodar o seeder 2x
-                array_merge($compData, ['user_id' => $user->id])
+                array_merge($compData, ['user_id' => $userId])
             );
 
             // Popula com histórico fictício para os gráficos não ficarem vazios
