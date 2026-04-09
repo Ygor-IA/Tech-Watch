@@ -22,13 +22,16 @@ class DatabaseSeeder extends Seeder
         ], [
             'name' => 'Admin Tech-Watch',
             'password' => Hash::make('password123'),
+            'is_admin' => true,
         ]);
 
+        $this->command->info('Usuário ADM de teste criado (admin@techwatch.com - senha: password123)');
         $user1 = User::firstOrCreate([
             'email' => 'joao@techwatch.com'
         ], [
             'name' => 'João',
             'password' => Hash::make('password123'),
+            'is_admin' => false,
         ]);
 
         $user2 = User::firstOrCreate([
@@ -36,9 +39,10 @@ class DatabaseSeeder extends Seeder
         ], [
             'name' => 'Maria',
             'password' => Hash::make('password123'),
+            'is_admin' => false,
         ]);
 
-        $this->command->info('Usuários de teste criados (admin@techwatch.com, joao@techwatch.com, maria@techwatch.com)');
+        $this->command->info('Dois usuários comuns criados (joao@ e maria@ - senha: password123)');
 
         // 2. Componentes de teste com links reais (BoaDica, ML e Teste Local)
         $componentesIniciais = [
